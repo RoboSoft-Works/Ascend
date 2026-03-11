@@ -115,6 +115,7 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
                 className="bg-background border-primary/30 focus-visible:ring-primary h-12 rounded-xl"
                 maxLength={15}
                 required
+                autoFocus
               />
               <Button 
                 type="submit" 
