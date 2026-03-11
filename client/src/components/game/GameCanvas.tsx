@@ -23,18 +23,21 @@ export function GameCanvas() {
     drop
   } = useGameEngine();
 
-  // Handle keyboard interaction
+  // Auto-start game on mount, handle keyboard interaction
+  useEffect(() => {
+    startGame();
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault();
         if (gameState === 'playing') drop();
-        else if (gameState === 'start') startGame();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, drop, startGame]);
+  }, [gameState, drop]);
 
   // Generate continuous color cycle
   const getBlockColor = (index: number) => {
@@ -66,19 +69,17 @@ export function GameCanvas() {
         }}
       >
         {/* Home Button */}
-        {gameState === 'start' && (
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={() => setLocation('/')}
-            className="absolute top-6 left-6 z-40 hover:opacity-80 transition-opacity"
-            data-testid="button-home"
-          >
-            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
-              <Home className="w-5 h-5 text-white" />
-            </Button>
-          </motion.button>
-        )}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={() => setLocation('/')}
+          className="absolute top-6 left-6 z-40 hover:opacity-80 transition-opacity"
+          data-testid="button-home"
+        >
+          <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
+            <Home className="w-5 h-5 text-white" />
+          </Button>
+        </motion.button>
         
         {/* HUD UI */}
         <div className="absolute top-0 inset-x-0 p-6 z-20 flex justify-between items-start pointer-events-none">
@@ -183,24 +184,6 @@ export function GameCanvas() {
           </div>
         </div>
 
-        {/* Start Screen Overlay */}
-        {gameState === 'start' && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-30 p-6">
-            <h1 className="text-6xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary text-glow text-center">
-              ASCEND
-            </h1>
-            <p className="text-muted-foreground mb-12 font-medium tracking-wide text-center">
-              Precision Stacker
-            </p>
-            
-            <Button size="lg" onClick={startGame} className="w-full max-w-[240px] text-xl h-16 rounded-2xl animate-pulse">
-              <Play className="w-6 h-6 mr-2 fill-current" />
-              TAP TO START
-            </Button>
-            
-            <p className="mt-6 text-sm text-white/40">Tap anywhere to drop the block</p>
-          </div>
-        )}
 
         {/* Game Over Screen Overlay */}
         {gameState === 'gameover' && (
