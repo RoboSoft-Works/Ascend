@@ -45,6 +45,10 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
 
     localStorage.setItem('ascend_player_name', name.trim());
 
+    // Track total games
+    const currentGames = localStorage.getItem('ascend_total_games') ? parseInt(localStorage.getItem('ascend_total_games')!) : 0;
+    localStorage.setItem('ascend_total_games', String(currentGames + 1));
+
     // Save to local storage leaderboard
     const newEntry = { score, perfectStreak, date: new Date().toISOString(), name: name.trim() };
     const saved = localStorage.getItem('ascend_highscores');

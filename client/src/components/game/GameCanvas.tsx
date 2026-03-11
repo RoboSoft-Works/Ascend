@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'wouter';
 import { useGameEngine, GAME_WIDTH, INITIAL_BLOCK_WIDTH, BLOCK_HEIGHT } from '@/hooks/use-game-engine';
 import { GameOverModal } from './GameOverModal';
-import { Play } from 'lucide-react';
+import { Play, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function GameCanvas() {
+  const [, setLocation] = useLocation();
   const {
     gameState,
     score,
@@ -63,6 +65,20 @@ export function GameCanvas() {
           if (gameState === 'playing') drop();
         }}
       >
+        {/* Home Button */}
+        {gameState === 'start' && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => setLocation('/')}
+            className="absolute top-6 left-6 z-40 hover:opacity-80 transition-opacity"
+            data-testid="button-home"
+          >
+            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
+              <Home className="w-5 h-5 text-white" />
+            </Button>
+          </motion.button>
+        )}
         
         {/* HUD UI */}
         <div className="absolute top-0 inset-x-0 p-6 z-20 flex justify-between items-start pointer-events-none">
