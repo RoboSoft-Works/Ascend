@@ -73,7 +73,7 @@ export function GameCanvas() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => setLocation('/')}
-          className="absolute top-6 left-6 z-40 hover:opacity-80 transition-opacity"
+          className="absolute bottom-6 left-6 z-40 hover:opacity-80 transition-opacity"
           data-testid="button-home"
         >
           <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
