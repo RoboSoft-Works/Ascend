@@ -131,6 +131,7 @@ export function GameCanvas() {
                   style={{
                     bottom: blocks.length * BLOCK_HEIGHT,
                     height: BLOCK_HEIGHT,
+                    width: currentWidth,
                     backgroundColor: getBlockColor(blocks.length),
                     zIndex: blocks.length + 1,
                     boxShadow: '0 10px 20px rgba(0,0,0,0.5)'
