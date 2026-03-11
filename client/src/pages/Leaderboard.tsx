@@ -1,0 +1,121 @@
+import { Link } from 'wouter';
+import { motion } from 'framer-motion';
+import { Trophy, ArrowLeft, Crown, Medal, Flame } from 'lucide-react';
+import { useScores } from '@/hooks/use-scores';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+
+export default function Leaderboard() {
+  const { data: globalScores, isLoading } = useScores();
+
+  // Load local scores as fallback or complement
+  const localScoresString = typeof window !== 'undefined' ? localStorage.getItem('ascend_highscores') : null;
+  const localScores = localScoresString ? JSON.parse(localScoresString) : [];
+
+  // Use global if available, else local
+  const displayScores = globalScores && globalScores.length > 0 ? globalScores : localScores.map((s: any, i: number) => ({
+    id: i,
+    playerName: s.name || 'Anonymous',
+    score: s.score,
+    perfectStreak: s.perfectStreak,
+    createdAt: s.date
+  }));
+
+  const getRankIcon = (index: number) => {
+    switch (index) {
+      case 0: return <Crown className="w-6 h-6 text-yellow-400 drop-shadow-md" />;
+      case 1: return <Medal className="w-6 h-6 text-gray-300 drop-shadow-md" />;
+      case 2: return <Medal className="w-6 h-6 text-amber-600 drop-shadow-md" />;
+      default: return <span className="font-bold text-muted-foreground w-6 text-center">{index + 1}</span>;
+    }
+  };
+
+  return (
+    <div className="min-h-[100dvh] bg-game py-12 px-4 sm:px-6 relative overflow-hidden font-sans">
+      
+      {/* Decorative background blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-2xl mx-auto relative z-10">
+        
+        <div className="flex items-center justify-between mb-12">
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
+              <ArrowLeft className="w-6 h-6 text-white" />
+            </Button>
+          </Link>
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary text-glow text-center">
+            LEADERBOARD
+          </h1>
+          <div className="w-12" /> {/* spacer for flex balance */}
+        </div>
+
+        <div className="bg-card/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/10 text-sm font-bold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-4">
+              <span className="w-8 text-center">Rank</span>
+              <span>Player</span>
+            </div>
+            <div className="flex items-center gap-8 text-right">
+              <span className="hidden sm:block w-20">Streak</span>
+              <span className="w-24">Score</span>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+              <p className="font-medium">Loading high scores...</p>
+            </div>
+          ) : displayScores.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground text-center">
+              <Trophy className="w-16 h-16 mb-4 opacity-50" />
+              <p className="text-lg font-bold">No scores yet</p>
+              <p className="text-sm mt-1">Be the first to leave your mark!</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {displayScores.slice(0, 10).map((score: any, index: number) => (
+                <motion.div
+                  key={score.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`
+                    flex items-center justify-between p-4 rounded-2xl transition-all
+                    ${index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-600/5 border border-yellow-500/30' : 'bg-white/5 border border-white/5'}
+                  `}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-8 flex justify-center">
+                      {getRankIcon(index)}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-lg">{score.playerName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {score.createdAt ? format(new Date(score.createdAt), 'MMM d, yyyy') : 'Recently'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-8 text-right">
+                    <div className="hidden sm:flex items-center gap-1 text-primary w-20 justify-end">
+                      <Flame className="w-4 h-4" />
+                      <span className="font-bold">{score.perfectStreak}</span>
+                    </div>
+                    <div className={`font-black w-24 text-2xl ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
+                      {score.score.toLocaleString()}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
