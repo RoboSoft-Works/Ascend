@@ -33,7 +33,9 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
-            signingConfig signingConfigs.release
+            if (project.hasProperty('keystoreFile')) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             minifyEnabled false
