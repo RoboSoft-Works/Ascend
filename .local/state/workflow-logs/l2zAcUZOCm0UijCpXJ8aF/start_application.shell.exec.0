@@ -1,0 +1,30 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[1G[0K9:16:47 AM [express] serving on port 5000
+9:17:31 AM [express] POST /api/scores 201 in 75ms :: {"id":4,"playerName":"TB","score":2050,"perfectStreak":1,"createdAt":"2026-03-11T09:17:31.235Z"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m9:17:53 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/game/GameCanvas.tsx, /src/index.css[22m

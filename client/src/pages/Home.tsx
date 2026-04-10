@@ -111,7 +111,7 @@ export default function Home() {
           >
             <Zap className="w-5 h-5 text-primary mb-2" />
             <div className="text-2xl sm:text-3xl font-black text-white">{stats.totalGames}</div>
-            <div className="text-xs text-muted-foreground font-medium mt-1">Games</div>
+            <div className="text-xs text-muted-foreground font-medium mt-1">Total Times Played</div>
           </motion.div>
 
           {/* Best Score */}
