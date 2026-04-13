@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { type InsertScore } from "@shared/schema";
+import { getApiUrl } from "@/lib/api-config";
 
 export function useScores() {
   return useQuery({
     queryKey: [api.scores.list.path],
     queryFn: async () => {
-      const res = await fetch(api.scores.list.path);
+      const res = await fetch(getApiUrl(api.scores.list.path));
       if (!res.ok) throw new Error("Failed to fetch scores");
       const data = await res.json();
       return api.scores.list.responses[200].parse(data);
@@ -20,7 +21,7 @@ export function useCreateScore() {
   return useMutation({
     mutationFn: async (data: InsertScore) => {
       const validated = api.scores.create.input.parse(data);
-      const res = await fetch(api.scores.create.path, {
+      const res = await fetch(getApiUrl(api.scores.create.path), {
         method: api.scores.create.method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validated),

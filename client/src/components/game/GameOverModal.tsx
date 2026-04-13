@@ -58,16 +58,18 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
     localScores = localScores.slice(0, 5); // Keep top 5
     localStorage.setItem('ascend_highscores', JSON.stringify(localScores));
 
-    // Save to server
-    try {
-      await createScore.mutateAsync({
-        playerName: name.trim(),
-        score,
-        perfectStreak
-      });
-    } catch (e) {
-      console.error("Failed to sync to server", e);
-      // We still submitted locally, so it's fine
+    // Save to server (only if not in Capacitor or if server is available)
+    if (!window.location.protocol.includes('capacitor')) {
+      try {
+        await createScore.mutateAsync({
+          playerName: name.trim(),
+          score,
+          perfectStreak
+        });
+      } catch (e) {
+        console.error("Failed to sync to server", e);
+        // We still submitted locally, so it's fine
+      }
     }
 
     setHasSubmitted(true);
