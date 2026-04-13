@@ -79,15 +79,16 @@ jobs:
         cd android
         ./gradlew assembleDebug
         
-    - name: Build Release APK
-      run: |
-        cd android
-        ./gradlew assembleRelease
+    # Commented out - requires signing configuration
+    # - name: Build Release APK
+    #   run: |
+    #     cd android
+    #     ./gradlew assembleRelease
         
-    - name: Build Release AAB
-      run: |
-        cd android
-        ./gradlew bundleRelease
+    # - name: Build Release AAB
+    #   run: |
+    #     cd android
+    #     ./gradlew bundleRelease
         
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
@@ -96,19 +97,20 @@ jobs:
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
         
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-apk
-        path: android/app/build/outputs/apk/release/app-release.apk
-        retention-days: 90
+    # Commented out - no release builds
+    # - name: Upload Release APK
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: release-apk
+    #     path: android/app/build/outputs/apk/release/app-release.apk
+    #     retention-days: 90
         
-    - name: Upload Release AAB
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-aab
-        path: android/app/build/outputs/bundle/release/app-release.aab
-        retention-days: 90
+    # - name: Upload Release AAB
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: release-aab
+    #     path: android/app/build/outputs/bundle/release/app-release.aab
+    #     retention-days: 90
         
     - name: Get version
       id: version
@@ -120,8 +122,6 @@ jobs:
       with:
         files: |
           android/app/build/outputs/apk/debug/app-debug.apk
-          android/app/build/outputs/apk/release/app-release.apk
-          android/app/build/outputs/bundle/release/app-release.aab
         name: Release ${{ steps.version.outputs.VERSION }}
         draft: false
         prerelease: false
