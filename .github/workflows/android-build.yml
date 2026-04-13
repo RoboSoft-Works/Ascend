@@ -2,10 +2,10 @@ name: Build Android APK and AAB
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, test_mobile ]
     tags: [ 'v*' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:
