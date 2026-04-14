@@ -1,0 +1,261 @@
+/* Responsive Design System for Ascend Game */
+
+/* Base font sizes for different screen sizes */
+:root {
+  --font-xs: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);     /* 10px - 12px */
+  --font-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12px - 14px */
+  --font-base: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);     /* 14px - 16px */
+  --font-lg: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);         /* 16px - 18px */
+  --font-xl: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);      /* 18px - 20px */
+  --font-2xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);      /* 20px - 24px */
+  --font-3xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);        /* 24px - 30px */
+  --font-4xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);   /* 30px - 36px */
+  --font-5xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);        /* 36px - 48px */
+}
+
+/* Mobile-first responsive utilities */
+.responsive-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 475px) {
+  .responsive-container {
+    padding: 0 1.25rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    max-width: 1280px;
+  }
+}
+
+/* Touch-friendly tap targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Safe area insets for mobile devices */
+.safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Responsive text truncation */
+.truncate-responsive {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 475px) {
+  .truncate-responsive {
+    max-width: 120px;
+  }
+}
+
+@media (min-width: 476px) and (max-width: 640px) {
+  .truncate-responsive {
+    max-width: 180px;
+  }
+}
+
+/* Responsive spacing */
+.space-responsive {
+  padding: clamp(1rem, 0.5rem + 2.5vw, 2rem);
+}
+
+/* Fluid Typography for All Titles */
+.ascend-title {
+  font-size: clamp(2.5rem, 5vw, 6rem); /* 40px - 96px */
+  line-height: clamp(2rem, 4vw, 4.8rem); /* 32px - 76.8px */
+  letter-spacing: -0.02em;
+}
+
+.ascend-subtitle {
+  font-size: clamp(0.625rem, 1.5vw, 0.875rem); /* 10px - 14px */
+  letter-spacing: clamp(0.1em, 2vw, 0.2em); /* 0.1em - 0.2em */
+}
+
+.game-over-title {
+  font-size: clamp(1.5rem, 4vw, 3rem); /* 24px - 48px */
+  line-height: clamp(1.25rem, 3.5vw, 2.5rem); /* 20px - 40px */
+  letter-spacing: -0.01em;
+}
+
+.leaderboard-title {
+  font-size: clamp(1.25rem, 3.5vw, 2.5rem); /* 20px - 40px */
+  line-height: clamp(1rem, 3vw, 2rem); /* 16px - 32px */
+  letter-spacing: -0.01em;
+}
+
+.page-title {
+  font-size: clamp(1.75rem, 4.5vw, 3.5rem); /* 28px - 56px */
+  line-height: clamp(1.5rem, 4vw, 3rem); /* 24px - 48px */
+  letter-spacing: -0.015em;
+}
+
+.section-title {
+  font-size: clamp(1.25rem, 3vw, 2rem); /* 20px - 32px */
+  line-height: clamp(1rem, 2.5vw, 1.5rem); /* 16px - 24px */
+  letter-spacing: -0.005em;
+}
+
+/* Game-specific responsive styles */
+.game-container {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .game-container {
+    height: 90vh;
+    max-height: 800px;
+    border-radius: 1.5rem;
+  }
+}
+
+/* Responsive HUD */
+.hud-responsive {
+  padding: clamp(0.75rem, 0.5rem + 1.25vw, 1.5rem);
+}
+
+.hud-score {
+  font-size: clamp(1.5rem, 1rem + 2.5vw, 2.5rem);
+}
+
+.hud-label {
+  font-size: clamp(0.625rem, 0.5rem + 0.625vw, 0.875rem);
+}
+
+/* Responsive buttons */
+.btn-responsive {
+  min-height: clamp(2.5rem, 2rem + 2.5vw, 3.5rem);
+  padding: clamp(0.5rem, 0.25rem + 1.25vw, 1rem) clamp(1rem, 0.5rem + 2.5vw, 2rem);
+  font-size: clamp(0.875rem, 0.75rem + 0.625vw, 1.125rem);
+  border-radius: clamp(0.75rem, 0.5rem + 1.25vw, 1rem);
+}
+
+/* Responsive modal */
+.modal-responsive {
+  width: 100%;
+  max-width: clamp(20rem, 18rem + 10vw, 28rem);
+  margin: 1rem;
+  padding: clamp(1.5rem, 1rem + 2.5vw, 2rem);
+  border-radius: clamp(1rem, 0.75rem + 1.25vw, 1.5rem);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Responsive leaderboard */
+.leaderboard-entry {
+  padding: clamp(0.75rem, 0.5rem + 1.25vw, 1rem);
+  gap: clamp(0.5rem, 0.25rem + 1.25vw, 1rem);
+}
+
+.leaderboard-rank {
+  width: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+  height: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+}
+
+.leaderboard-score {
+  font-size: clamp(1.125rem, 0.875rem + 1.25vw, 1.5rem);
+  width: clamp(3rem, 2.5rem + 2.5vw, 6rem);
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .game-container {
+    border: 2px solid currentColor;
+  }
+  
+  .btn-responsive {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .game-container {
+    background: #000;
+  }
+}
+
+/* Landscape mobile optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .hud-responsive {
+    padding: 0.5rem;
+  }
+  
+  .modal-responsive {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+}
+
+/* Loading Screen Reset */
+.loading-screen-reset {
+  margin: 0 !important;
+  padding: 0 !important;
+  bottom: 0 !important;
+  position: absolute !important;
+}
+
+.loading-screen-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+}

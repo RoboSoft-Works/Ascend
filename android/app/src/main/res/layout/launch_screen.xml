@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Main Background -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/splash_background"
+        android:scaleType="centerCrop" />
+
+    <!-- Logo Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
+
+        <!-- App Icon -->
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginBottom="24dp" />
+
+        <!-- App Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ASCEND"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Precision Stacker"
+            android:textSize="16sp"
+            android:textColor="#80FFFFFF"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="0.1" />
+
+    </LinearLayout>
+
+    <!-- Loading Indicator -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap"
+        android:layout_above="@+id/developerInfo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/loading_dot"
+            android:layout_marginEnd="4dp" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/loading_dot"
+            android:layout_marginEnd="4dp" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/loading_dot"
+            android:layout_marginEnd="4dp" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/loading_dot" />
+
+    </LinearLayout>
+
+    <!-- Developer Info -->
+    <TextView
+        android:id="@+id/developerInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Powered by RSW Games"
+        android:textSize="12sp"
+        android:textColor="#40FFFFFF"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
+
+</RelativeLayout>

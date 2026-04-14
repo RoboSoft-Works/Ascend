@@ -5,6 +5,13 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '3xl': '1600px',
+      },
       borderRadius: {
         lg: ".5625rem", /* 9px */
         md: ".375rem", /* 6px */

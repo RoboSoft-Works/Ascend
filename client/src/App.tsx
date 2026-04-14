@@ -4,6 +4,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { useLoadingManager } from "@/hooks/use-loading-manager";
+import "@/styles/responsive.css";
 
 // Pages
 import Home from "@/pages/Home";
@@ -22,11 +25,19 @@ function Router() {
 }
 
 function App() {
+  const { isLoading, completeLoading } = useLoadingManager();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <LoadingScreen 
+          isLoading={isLoading} 
+          onLoadingComplete={completeLoading}
+        />
+        <div className={isLoading ? "opacity-0 pointer-events-none" : "opacity-100"}>
+          <Router />
+        </div>
         <Toaster />
-        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );

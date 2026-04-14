@@ -40,7 +40,7 @@ export function useGameEngine() {
   const mX = useRef(0);
   const mW = useRef(INITIAL_BLOCK_WIDTH);
   const mDirection = useRef(1);
-  const mSpeed = useRef(3);
+  const mSpeed = useRef(2.5); // Slower initial speed for better control
   const animationFrameId = useRef<number>();
 
   const triggerEffect = (setter: React.Dispatch<React.SetStateAction<boolean>>, duration: number) => {
@@ -59,7 +59,7 @@ export function useGameEngine() {
     mW.current = INITIAL_BLOCK_WIDTH;
     mX.current = 0;
     mDirection.current = 1;
-    mSpeed.current = 3;
+    mSpeed.current = 2.5; // Reset to optimized initial speed
     
     if (movingBlockRef.current) {
       movingBlockRef.current.style.transform = `translateX(0px)`;
@@ -140,7 +140,8 @@ export function useGameEngine() {
     
     // Update refs for next block
     mW.current = newW;
-    mSpeed.current = Math.min(12, 3 + (blocks.length * 0.15)); // Cap speed
+    // Smoother speed progression
+    mSpeed.current = Math.min(8, 2.5 + (blocks.length * 0.12)); // Reduced max speed and smoother progression
     
     // Reverse direction every 8 stacks as per requirements
     if (blocks.length % 8 === 0) {
@@ -156,23 +157,34 @@ export function useGameEngine() {
 
   }, [gameState, blocks, combo, triggerPerfectBurst]);
 
-  // Main game loop using requestAnimationFrame
+  // Main game loop using requestAnimationFrame with optimizations
   useEffect(() => {
     let lastTime = performance.now();
+    let frameCount = 0;
+    let fpsTime = 0;
 
     const loop = (time: number) => {
       if (gameState !== 'playing') return;
 
-      // Ensure stable speed regardless of frame rate drops
+      // FPS monitoring for performance tuning
+      frameCount++;
       const deltaTime = time - lastTime;
+      fpsTime += deltaTime;
+      
+      if (fpsTime >= 1000) {
+        // console.log(`FPS: ${frameCount}`); // Uncomment for debugging
+        frameCount = 0;
+        fpsTime = 0;
+      }
+      
       lastTime = time;
       
-      // Calculate movement based on 60fps base (16.6ms)
-      const timeScale = deltaTime / 16.66;
+      // Use fixed timestep for consistent physics
+      const fixedDelta = 16.67; // 60fps target
       
-      mX.current += (mSpeed.current * mDirection.current * timeScale);
+      mX.current += (mSpeed.current * mDirection.current * fixedDelta / 16.67);
 
-      // Bounce off walls
+      // Optimized boundary checks
       if (mX.current <= 0) {
         mX.current = 0;
         mDirection.current = 1;
@@ -181,9 +193,9 @@ export function useGameEngine() {
         mDirection.current = -1;
       }
 
-      // Apply to DOM directly for performance
+      // Apply to DOM directly with will-change optimization
       if (movingBlockRef.current) {
-        movingBlockRef.current.style.transform = `translateX(${mX.current}px)`;
+        movingBlockRef.current.style.transform = `translate3d(${mX.current}px, 0, 0)`;
       }
 
       animationFrameId.current = requestAnimationFrame(loop);

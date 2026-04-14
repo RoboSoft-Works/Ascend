@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, RotateCcw, Home, Loader2 } from 'lucide-react';
-import { Link, useLocation } from 'wouter';
+import { useLocation } from 'wouter';
+import { useScores, useCreateScore } from '@/hooks/use-scores';
+import { useScoreTitle } from '@/hooks/use-score-titles';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useCreateScore } from '@/hooks/use-scores';
+import { Loader2, RotateCcw, Trophy, Star, Crown } from 'lucide-react';
 
 interface GameOverModalProps {
   score: number;
@@ -14,61 +14,57 @@ interface GameOverModalProps {
 
 export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModalProps) {
   const [, setLocation] = useLocation();
-  const [name, setName] = useState('');
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   
   const createScore = useCreateScore();
+  const { currentTitle, isNewTitle } = useScoreTitle(score);
 
-  // Check local storage records
+  // Auto-submit score when modal opens
   useEffect(() => {
-    const saved = localStorage.getItem('ascend_highscores');
-    if (saved) {
-      try {
-        const scores = JSON.parse(saved);
-        if (scores.length === 0 || score > scores[0].score) {
-          setIsNewRecord(true);
-        }
-      } catch (e) {}
-    } else if (score > 0) {
-      setIsNewRecord(true); // First game ever
+    if (!hasSubmitted && score > 0) {
+      submitScore();
     }
-    
-    // Attempt to load previous name
-    const savedName = localStorage.getItem('ascend_player_name');
-    if (savedName) setName(savedName);
   }, [score]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || hasSubmitted) return;
-
-    localStorage.setItem('ascend_player_name', name.trim());
+  const submitScore = async () => {
+    if (hasSubmitted) return;
 
     // Track total games
     const currentGames = localStorage.getItem('ascend_total_games') ? parseInt(localStorage.getItem('ascend_total_games')!) : 0;
     localStorage.setItem('ascend_total_games', String(currentGames + 1));
 
     // Save to local storage leaderboard
-    const newEntry = { score, perfectStreak, date: new Date().toISOString(), name: name.trim() };
+    const newEntry = { 
+      score, 
+      perfectStreak, 
+      date: new Date().toISOString(), 
+      playerName: currentTitle.title,
+      title: currentTitle.title,
+      subtitle: currentTitle.subtitle
+    };
     const saved = localStorage.getItem('ascend_highscores');
     let localScores = saved ? JSON.parse(saved) : [];
     localScores.push(newEntry);
     localScores.sort((a: any, b: any) => b.score - a.score);
-    localScores = localScores.slice(0, 5); // Keep top 5
+    localScores = localScores.slice(0, 10); // Keep top 10
     localStorage.setItem('ascend_highscores', JSON.stringify(localScores));
+
+    // Check if it's a new record
+    if (localScores.length === 0 || score > localScores[0].score) {
+      setIsNewRecord(true);
+    }
 
     // Save to server (only if not in Capacitor or if server is available)
     if (!window.location.protocol.includes('capacitor')) {
       try {
         await createScore.mutateAsync({
-          playerName: name.trim(),
+          playerName: currentTitle.title,
           score,
           perfectStreak
         });
       } catch (e) {
         console.error("Failed to sync to server", e);
-        // We still submitted locally, so it's fine
       }
     }
 
@@ -85,9 +81,9 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ type: "spring", bounce: 0.5 }}
-        className="bg-card w-full max-w-sm rounded-3xl p-8 border border-border shadow-2xl flex flex-col items-center"
+        className="bg-card w-full max-w-sm sm:max-w-md mx-auto rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-border shadow-2xl flex flex-col items-center max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="text-4xl font-black mb-2 text-glow-gold bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent">
+        <h2 className="game-over-title font-black mb-2 text-glow-gold bg-gradient-to-r from-yellow-400 to-amber-600 bg-clip-text text-transparent text-center">
           GAME OVER
         </h2>
         
@@ -95,53 +91,64 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
           <motion.div 
             initial={{ rotate: -10, scale: 0 }}
             animate={{ rotate: 0, scale: 1 }}
-            className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-bold mb-6 tracking-widest uppercase"
+            className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-bold mb-4 tracking-widest uppercase"
           >
             New Record!
           </motion.div>
         )}
 
-        <div className="w-full bg-background/50 rounded-2xl p-6 mb-8 border border-white/5 flex flex-col items-center">
-          <div className="text-sm text-muted-foreground uppercase tracking-wider mb-1">Final Score</div>
-          <div className="text-6xl font-black text-white mb-4">{score}</div>
+        {isNewTitle && score > 0 && (
+          <motion.div 
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", bounce: 0.6, delay: 0.3 }}
+            className="mb-6"
+          >
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Star className="w-5 h-5 text-yellow-400 animate-pulse" />
+              <motion.div
+                className={`section-title font-black text-transparent bg-clip-text bg-gradient-to-r ${currentTitle.color} text-center`}
+                whileHover={{ scale: 1.05 }}
+              >
+                {currentTitle.title}
+              </motion.div>
+              <Star className="w-5 h-5 text-yellow-400 animate-pulse" />
+            </div>
+            <motion.p 
+              className="text-center text-muted-foreground font-medium text-sm"
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              {currentTitle.subtitle}
+            </motion.p>
+          </motion.div>
+        )}
+
+        <div className="w-full bg-background/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/5 flex flex-col items-center">
+          <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider mb-1">Final Score</div>
+          <div className="text-4xl sm:text-6xl font-black text-white mb-3 sm:mb-4">{score}</div>
           
           <div className="flex items-center gap-2 text-primary">
-            <Trophy className="w-5 h-5" />
-            <span className="font-semibold">Best Streak: {perfectStreak}</span>
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base font-semibold">Best Streak: {perfectStreak}</span>
           </div>
         </div>
 
-        {!hasSubmitted ? (
-          <form onSubmit={handleSubmit} className="w-full mb-6">
-            <div className="flex gap-2">
-              <Input 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-                className="bg-background border-primary/30 focus-visible:ring-primary h-12 rounded-xl"
-                maxLength={15}
-                required
-                autoFocus
-              />
-              <Button 
-                type="submit" 
-                variant="gold" 
-                className="px-6"
-                disabled={!name.trim() || createScore.isPending}
-              >
-                {createScore.isPending ? <Loader2 className="animate-spin w-5 h-5" /> : "Save"}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div className="text-green-400 font-semibold mb-6 flex items-center gap-2">
+        {hasSubmitted && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-green-400 font-semibold mb-6 flex items-center gap-2"
+          >
+            <Trophy className="w-4 h-4" />
             Score Saved!
-          </div>
+          </motion.div>
         )}
 
-        <div className="w-full flex flex-col gap-3">
-          <Button size="lg" onClick={onRestart} className="w-full text-lg">
-            <RotateCcw className="w-6 h-6 mr-2" />
+        <div className="w-full flex flex-col gap-2 sm:gap-3">
+          <Button size="lg" onClick={onRestart} className="w-full text-base sm:text-lg h-12 sm:h-14 rounded-xl">
+            <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
             Play Again
           </Button>
           
@@ -149,9 +156,9 @@ export function GameOverModal({ score, perfectStreak, onRestart }: GameOverModal
             variant="outline" 
             size="lg" 
             onClick={() => setLocation('/leaderboard')}
-            className="w-full"
+            className="w-full h-12 sm:h-14 rounded-xl text-base sm:text-lg"
           >
-            <Trophy className="w-5 h-5 mr-2" />
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Leaderboard
           </Button>
         </div>

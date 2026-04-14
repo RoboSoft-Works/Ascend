@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { useGameEngine, GAME_WIDTH, INITIAL_BLOCK_WIDTH, BLOCK_HEIGHT } from '@/hooks/use-game-engine';
+import { useScoreTitle } from '@/hooks/use-score-titles';
 import { GameOverModal } from './GameOverModal';
-import { Play, Home } from 'lucide-react';
+import { Play, Home, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function GameCanvas() {
@@ -23,6 +24,8 @@ export function GameCanvas() {
     drop
   } = useGameEngine();
 
+  const { currentTitle, isNewTitle } = useScoreTitle(score);
+
   // Auto-start game on mount, handle keyboard interaction
   useEffect(() => {
     startGame();
@@ -39,26 +42,28 @@ export function GameCanvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, drop]);
 
-  // Generate continuous color cycle
-  const getBlockColor = (index: number) => {
+  // Memoize color calculation to prevent unnecessary recalculations
+  const getBlockColor = useCallback((index: number) => {
     // Cycles smoothly through purples and pinks (240 to 300)
     const hue = 247 + ((index * 8) % 60);
     return `hsl(${hue}, 80%, 65%)`;
-  };
+  }, []);
 
-  // Calculate camera shift to keep action centered
-  // If stack is taller than 12, shift it down
-  const cameraShift = blocks.length > 12 ? (blocks.length - 12) * BLOCK_HEIGHT : 0;
+  // Memoize camera shift calculation
+  const cameraShift = useMemo(() => {
+    return blocks.length > 12 ? (blocks.length - 12) * BLOCK_HEIGHT : 0;
+  }, [blocks.length]);
 
   return (
-    <div className="w-full min-h-[100dvh] flex items-center justify-center bg-black p-0 sm:p-4 font-sans select-none">
+    <div className="w-full min-h-[100dvh] flex items-center justify-center bg-black p-0 sm:p-2 lg:p-4 font-sans select-none overflow-hidden">
       
       {/* Main Game Container */}
       <div 
         className={`
-          relative w-full max-w-[400px] h-[100dvh] sm:h-[800px] sm:max-h-[90vh] sm:rounded-3xl 
-          bg-game overflow-hidden border-border/50 sm:border 
-          shadow-2xl shadow-primary/10 touch-none
+          relative w-full max-w-[380px] xs:max-w-[400px] h-[100dvh] xs:h-[90vh] sm:h-[800px] sm:max-h-[90vh] 
+          rounded-none xs:rounded-xl sm:rounded-3xl 
+          bg-game overflow-hidden border-border/30 xs:border-border/50 sm:border 
+          shadow-lg xs:shadow-xl sm:shadow-2xl shadow-primary/10 touch-none
           ${isFlashing ? 'animate-flash' : ''}
           ${isShaking ? 'animate-shake' : ''}
           ${blocks.length > 25 ? 'animate-pulse-bg' : ''}
@@ -73,7 +78,7 @@ export function GameCanvas() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           onClick={() => setLocation('/')}
-          className="absolute bottom-6 left-6 z-40 hover:opacity-80 transition-opacity"
+          className="absolute bottom-4 xs:bottom-6 left-4 xs:left-6 z-40 hover:opacity-80 transition-opacity"
           data-testid="button-home"
         >
           <Button variant="ghost" size="icon" className="rounded-full bg-white/5 hover:bg-white/10">
@@ -82,17 +87,17 @@ export function GameCanvas() {
         </motion.button>
         
         {/* HUD UI */}
-        <div className="absolute top-0 inset-x-0 p-6 z-20 flex justify-between items-start pointer-events-none">
+        <div className="absolute top-0 inset-x-0 p-3 xs:p-4 sm:p-6 z-20 flex justify-between items-start pointer-events-none">
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Stack</span>
-            <span className="text-2xl font-black text-white">{blocks.length}</span>
+            <span className="text-[10px] xs:text-xs font-bold text-muted-foreground uppercase tracking-wider">Stack</span>
+            <span className="text-xl xs:text-2xl font-black text-white">{blocks.length}</span>
             <AnimatePresence>
               {combo >= 3 && (
                 <motion.div 
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0 }}
-                  className="mt-1 text-sm font-bold text-accent text-glow-gold"
+                  className="mt-1 text-xs xs:text-sm font-bold text-accent text-glow-gold"
                 >
                   {combo}x COMBO!
                 </motion.div>
@@ -101,8 +106,8 @@ export function GameCanvas() {
           </div>
           
           <div className="flex flex-col items-end">
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Score</span>
-            <span className="text-4xl font-black text-white text-glow tracking-tighter">
+            <span className="text-[10px] xs:text-xs font-bold text-muted-foreground uppercase tracking-wider">Score</span>
+            <span className="text-3xl xs:text-4xl font-black text-white text-glow tracking-tighter">
               {score.toLocaleString()}
             </span>
           </div>
@@ -151,7 +156,10 @@ export function GameCanvas() {
                     width: currentWidth,
                     backgroundColor: getBlockColor(blocks.length),
                     zIndex: blocks.length + 1,
-                    boxShadow: '0 10px 20px rgba(0,0,0,0.5)'
+                    boxShadow: '0 10px 20px rgba(0,0,0,0.5)',
+                    transform: 'translate3d(0, 0, 0)', // Force hardware acceleration
+                    backfaceVisibility: 'hidden' as any,
+                    perspective: 1000
                   }}
                 />
               )}
@@ -161,20 +169,32 @@ export function GameCanvas() {
                 {debris.map(d => (
                   <motion.div
                     key={d.id}
-                    initial={{ y: -(d.y * BLOCK_HEIGHT), x: d.x, opacity: 1, rotate: 0 }}
-                    animate={{ 
-                      y: -((d.y - 10) * BLOCK_HEIGHT), 
-                      x: d.x + (d.isLeft ? -50 : 50),
-                      opacity: 0,
-                      rotate: d.isLeft ? -45 : 45
+                    initial={{ 
+                      y: -(d.y * BLOCK_HEIGHT), 
+                      x: d.x, 
+                      opacity: 0.8, 
+                      rotate: 0,
+                      scale: 1
                     }}
-                    transition={{ duration: 1, ease: "easeIn" }}
+                    animate={{ 
+                      y: -((d.y - 8) * BLOCK_HEIGHT), 
+                      x: d.x + (d.isLeft ? -40 : 40),
+                      opacity: 0,
+                      rotate: d.isLeft ? -30 : 30,
+                      scale: 0.8
+                    }}
+                    transition={{ 
+                      duration: 0.6, 
+                      ease: "easeOut",
+                      type: "tween"
+                    }}
                     className="absolute block-glow rounded-md pointer-events-none"
                     style={{
                       width: d.w,
                       height: BLOCK_HEIGHT,
                       backgroundColor: getBlockColor(d.y),
                       bottom: 0,
+                      willChange: 'transform'
                     }}
                   />
                 ))}
@@ -184,6 +204,36 @@ export function GameCanvas() {
           </div>
         </div>
 
+        {/* Title Achievement Notification */}
+        <AnimatePresence>
+          {isNewTitle && score > 0 && gameState === 'playing' && (
+            <motion.div
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
+              className="absolute top-20 left-0 right-0 flex justify-center pointer-events-none z-30"
+            >
+              <motion.div
+                className="bg-black/80 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-3 flex items-center gap-3"
+                whileHover={{ scale: 1.02 }}
+              >
+                <Star className="w-6 h-6 text-yellow-400 animate-pulse" />
+                <div className="text-center">
+                  <motion.div
+                    className={`section-title font-black text-transparent bg-clip-text bg-gradient-to-r ${currentTitle.color}`}
+                  >
+                    {currentTitle.title}
+                  </motion.div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {currentTitle.subtitle}
+                  </p>
+                </div>
+                <Star className="w-6 h-6 text-yellow-400 animate-pulse" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Game Over Screen Overlay */}
         {gameState === 'gameover' && (
