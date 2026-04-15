@@ -201,9 +201,7 @@ export function LoadingScreen({ isLoading, onLoadingComplete }: LoadingScreenPro
               <p className="text-xs text-white/40">
                 Powered by RSW Games
               </p>
-              <p className="text-xs text-white/20 mt-1">
-                v1.0.0
-              </p>
+
             </motion.div>
           </div>
         </motion.div>
