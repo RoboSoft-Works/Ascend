@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: ~/.npm
           
       - name: Setup Java JDK
         uses: actions/setup-java@v3
