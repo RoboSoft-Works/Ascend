@@ -74,10 +74,6 @@ jobs:
           sed -i 's|apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"|if (file("../capacitor-cordova-android-plugins/cordova.variables.gradle").exists()) { apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle" }|' android/app/capacitor.build.gradle
         fi
         
-        # Skip resource merge that's causing issues
-        echo "SKIPPING_RESOURCE_MERGE=true" >> $GITHUB_ENV
-        echo "Resource merge skipped to avoid duplicate conflicts" >> $GITHUB_ENV
-        
     - name: Build Debug APK
       run: |
         cd android
