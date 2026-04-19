@@ -69,14 +69,17 @@ export function useGameEngine() {
   }, []);
 
   const triggerPerfectBurst = useCallback(() => {
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.7 },
-      colors: ['#FDCB6E', '#A463F5', '#E843FE'],
-      disableForReducedMotion: true,
-      zIndex: 100
-    });
+    // Use setTimeout to prevent blocking the game loop
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.7 },
+        colors: ['#FDCB6E', '#A463F5', '#E843FE'],
+        disableForReducedMotion: true,
+        zIndex: 100
+      });
+    }, 0);
   }, []);
 
   const drop = useCallback(() => {
