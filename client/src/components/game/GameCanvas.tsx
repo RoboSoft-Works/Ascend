@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { useGameEngine, GAME_WIDTH, INITIAL_BLOCK_WIDTH, BLOCK_HEIGHT } from '@/hooks/use-game-engine';
@@ -42,11 +42,17 @@ export function GameCanvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, drop]);
 
-  // Memoize color calculation to prevent unnecessary recalculations
+  // Optimized color calculation with caching
+  const colorCache = useRef(new Map<number, string>());
   const getBlockColor = useCallback((index: number) => {
+    if (colorCache.current.has(index)) {
+      return colorCache.current.get(index)!;
+    }
     // Cycles smoothly through purples and pinks (240 to 300)
     const hue = 247 + ((index * 8) % 60);
-    return `hsl(${hue}, 80%, 65%)`;
+    const color = `hsl(${hue}, 80%, 65%)`;
+    colorCache.current.set(index, color);
+    return color;
   }, []);
 
   // Memoize camera shift calculation
@@ -60,7 +66,7 @@ export function GameCanvas() {
       {/* Main Game Container */}
       <div 
         className={`
-          relative w-full max-w-[380px] xs:max-w-[400px] h-[100dvh] xs:h-[90vh] sm:h-[800px] sm:max-h-[90vh] 
+          game-container relative w-full max-w-[380px] xs:max-w-[400px] h-[100dvh] xs:h-[90vh] sm:h-[800px] sm:max-h-[90vh] 
           rounded-none xs:rounded-xl sm:rounded-3xl 
           bg-game overflow-hidden border-border/30 xs:border-border/50 sm:border 
           shadow-lg xs:shadow-xl sm:shadow-2xl shadow-primary/10 touch-none
@@ -125,31 +131,35 @@ export function GameCanvas() {
               style={{ transform: `translateY(${cameraShift}px)` }}
             >
               
-              {/* Static Blocks */}
-              {blocks.map((b, i) => (
-                <div
-                  key={b.id}
-                  className="absolute block-glow rounded-md"
-                  style={{
-                    bottom: i * BLOCK_HEIGHT,
-                    left: b.x,
-                    width: b.w,
-                    height: BLOCK_HEIGHT,
-                    backgroundColor: getBlockColor(i),
-                    zIndex: i
-                  }}
-                >
-                  {b.perfect && i > 0 && (
-                    <div className="absolute inset-0 border-2 border-white/40 rounded-md mix-blend-overlay pointer-events-none" />
-                  )}
-                </div>
-              ))}
+              {/* Static Blocks - Fixed rendering optimization */}
+              {blocks.map((b, i) => {
+                return (
+                  <div
+                    key={b.id}
+                    className="absolute block-glow rounded-md"
+                    style={{
+                      bottom: i * BLOCK_HEIGHT,
+                      left: b.x,
+                      width: b.w,
+                      height: BLOCK_HEIGHT,
+                      backgroundColor: getBlockColor(i),
+                      zIndex: i,
+                      willChange: 'transform',
+                      backfaceVisibility: 'hidden' as any
+                    }}
+                  >
+                    {b.perfect && i > 0 && (
+                      <div className="absolute inset-0 border-2 border-white/40 rounded-md mix-blend-overlay pointer-events-none" />
+                    )}
+                  </div>
+                );
+              })}
 
-              {/* Moving Block */}
+              {/* Moving Block - Optimized for performance */}
               {gameState === 'playing' && (
                 <div
                   ref={movingBlockRef}
-                  className="absolute block-glow rounded-md shadow-2xl transition-none will-change-transform"
+                  className="absolute block-glow rounded-md shadow-2xl"
                   style={{
                     bottom: blocks.length * BLOCK_HEIGHT,
                     height: BLOCK_HEIGHT,
@@ -159,14 +169,15 @@ export function GameCanvas() {
                     boxShadow: '0 10px 20px rgba(0,0,0,0.5)',
                     transform: 'translate3d(0, 0, 0)', // Force hardware acceleration
                     backfaceVisibility: 'hidden' as any,
-                    perspective: 1000
+                    perspective: 1000,
+                    willChange: 'transform, width'
                   }}
                 />
               )}
 
-              {/* Falling Debris */}
+              {/* Falling Debris - Optimized with limited count */}
               <AnimatePresence>
-                {debris.map(d => (
+                {debris.slice(-5).map(d => (
                   <motion.div
                     key={d.id}
                     initial={{ 
@@ -178,13 +189,13 @@ export function GameCanvas() {
                     }}
                     animate={{ 
                       y: -((d.y - 8) * BLOCK_HEIGHT), 
-                      x: d.x + (d.isLeft ? -40 : 40),
+                      x: d.x + (d.isLeft ? -30 : 30),
                       opacity: 0,
-                      rotate: d.isLeft ? -30 : 30,
+                      rotate: d.isLeft ? -20 : 20,
                       scale: 0.8
                     }}
                     transition={{ 
-                      duration: 0.6, 
+                      duration: 0.4, 
                       ease: "easeOut",
                       type: "tween"
                     }}

@@ -40,8 +40,9 @@ export function useGameEngine() {
   const mX = useRef(0);
   const mW = useRef(INITIAL_BLOCK_WIDTH);
   const mDirection = useRef(1);
-  const mSpeed = useRef(2.5); // Slower initial speed for better control
+  const mSpeed = useRef(2.0); // Optimized initial speed for smooth performance
   const animationFrameId = useRef<number>();
+  const colorCache = useRef(new Map<number, string>());
 
   const triggerEffect = (setter: React.Dispatch<React.SetStateAction<boolean>>, duration: number) => {
     setter(true);
@@ -59,7 +60,7 @@ export function useGameEngine() {
     mW.current = INITIAL_BLOCK_WIDTH;
     mX.current = 0;
     mDirection.current = 1;
-    mSpeed.current = 2.5; // Reset to optimized initial speed
+    mSpeed.current = 2.0; // Reset to optimized initial speed
     
     if (movingBlockRef.current) {
       movingBlockRef.current.style.transform = `translateX(0px)`;
@@ -121,18 +122,22 @@ export function useGameEngine() {
       setCombo(0);
       triggerEffect(setIsShaking, 400);
 
-      // Generate debris
+      // Generate debris with memory management
       const isLeftDebris = currentX < topBlock.x;
       const debrisW = currentW - newW;
       const debrisX = isLeftDebris ? currentX : rightEdge;
       
-      setDebris(prev => [...prev, {
-        id: Date.now(),
-        x: debrisX,
-        w: debrisW,
-        y: blocks.length,
-        isLeft: isLeftDebris
-      }]);
+      setDebris(prev => {
+        const newDebris = [...prev, {
+          id: Date.now(),
+          x: debrisX,
+          w: debrisW,
+          y: blocks.length,
+          isLeft: isLeftDebris
+        }];
+        // Keep only last 10 debris to prevent memory issues
+        return newDebris.slice(-10);
+      });
     }
 
     // Prepare next state
@@ -140,8 +145,8 @@ export function useGameEngine() {
     
     // Update refs for next block
     mW.current = newW;
-    // Smoother speed progression
-    mSpeed.current = Math.min(8, 2.5 + (blocks.length * 0.12)); // Reduced max speed and smoother progression
+    // Optimized speed progression for smooth gameplay
+    mSpeed.current = Math.min(6, 2.0 + (blocks.length * 0.08)); // Reduced max speed and smoother progression
     
     // Reverse direction every 8 stacks as per requirements
     if (blocks.length % 8 === 0) {
@@ -157,45 +162,58 @@ export function useGameEngine() {
 
   }, [gameState, blocks, combo, triggerPerfectBurst]);
 
-  // Main game loop using requestAnimationFrame with optimizations
+  // Optimized game loop with performance monitoring and adaptive FPS
   useEffect(() => {
     let lastTime = performance.now();
     let frameCount = 0;
     let fpsTime = 0;
+    let adaptiveFPS = 60;
+    let frameSkipCounter = 0;
 
     const loop = (time: number) => {
       if (gameState !== 'playing') return;
 
-      // FPS monitoring for performance tuning
+      // Adaptive FPS based on performance
       frameCount++;
       const deltaTime = time - lastTime;
       fpsTime += deltaTime;
       
       if (fpsTime >= 1000) {
-        // console.log(`FPS: ${frameCount}`); // Uncomment for debugging
+        adaptiveFPS = frameCount;
         frameCount = 0;
         fpsTime = 0;
+        
+        // Skip frames if performance drops below 45 FPS
+        frameSkipCounter = adaptiveFPS < 45 ? 1 : 0;
       }
       
       lastTime = time;
       
-      // Use fixed timestep for consistent physics
-      const fixedDelta = 16.67; // 60fps target
+      // Skip frames for performance on slower devices
+      if (frameSkipCounter > 0) {
+        frameSkipCounter--;
+        animationFrameId.current = requestAnimationFrame(loop);
+        return;
+      }
       
-      mX.current += (mSpeed.current * mDirection.current * fixedDelta / 16.67);
+      // Optimized movement calculation with adaptive speed
+      const speedMultiplier = adaptiveFPS < 45 ? 0.8 : 1.0;
+      const moveAmount = (mSpeed.current * mDirection.current * speedMultiplier);
+      mX.current += moveAmount;
 
-      // Optimized boundary checks
+      // Optimized boundary checks with early returns
+      const maxX = GAME_WIDTH - mW.current;
       if (mX.current <= 0) {
         mX.current = 0;
         mDirection.current = 1;
-      } else if (mX.current + mW.current >= GAME_WIDTH) {
-        mX.current = GAME_WIDTH - mW.current;
+      } else if (mX.current >= maxX) {
+        mX.current = maxX;
         mDirection.current = -1;
       }
 
-      // Apply to DOM directly with will-change optimization
+      // Optimized DOM updates with transform3d for hardware acceleration
       if (movingBlockRef.current) {
-        movingBlockRef.current.style.transform = `translate3d(${mX.current}px, 0, 0)`;
+        movingBlockRef.current.style.transform = `translate3d(${mX.current.toFixed(2)}px, 0, 0)`;
       }
 
       animationFrameId.current = requestAnimationFrame(loop);
@@ -209,6 +227,8 @@ export function useGameEngine() {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
+      // Clean up memory
+      colorCache.current?.clear();
     };
   }, [gameState]);
 

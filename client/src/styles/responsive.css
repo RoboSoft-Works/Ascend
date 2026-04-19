@@ -1,5 +1,65 @@
 /* Responsive Design System for Ascend Game */
 
+/* Performance Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hardware acceleration for smooth animations */
+.game-container,
+.block-glow,
+.animate-flash,
+.animate-shake {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimized animations */
+.animate-flash {
+  animation: flash 0.3s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-out;
+}
+
+.animate-pulse-bg {
+  animation: pulse-bg 2s ease-in-out infinite;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@keyframes pulse-bg {
+  0%, 100% { background-color: rgba(164, 99, 245, 0.1); }
+  50% { background-color: rgba(164, 99, 245, 0.2); }
+}
+
+/* Reduced motion for better performance */
+@media (prefers-reduced-motion: reduce) {
+  .animate-flash,
+  .animate-shake,
+  .animate-pulse-bg {
+    animation: none;
+  }
+}
+
 /* Base font sizes for different screen sizes */
 :root {
   --font-xs: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);     /* 10px - 12px */
